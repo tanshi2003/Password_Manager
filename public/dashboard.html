@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Password Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .container {
+            width: 100%; /* Full width */
+            max-width: 100%; /* Full width */
+            margin: auto;
+        }
+        table {
+            width: 100%; /* Full width table */
+            table-layout: fixed;
+        }
+        td, th {
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="container">
+            <h1 class="left-align">Dashboard</h1>
+        </div>
+    </header>
+
+    <main>
+        <section id="dashboard" class="hero-section">
+            <div class="container">
+                <h2>Welcome to your Dashboard</h2>
+                <table border="1" cellpadding="10">
+                    <thead>
+                        <tr>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Email</th>
+                            <th>Mobile</th>
+                            <th>Password</th>
+                            <th>URL</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="user-first-name"></td>
+                            <td id="user-last-name"></td>
+                            <td id="user-email"></td>
+                            <td id="user-mobile"></td>
+                            <td id="user-password" style="cursor: pointer; color: blue; text-decoration: underline;"></td>
+                            <td id="user-url"></td>
+                            <td id="user-ip-address"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <button id="logout-btn" class="btn">Log Out</button>
+            </div>
+
+    <script>
+        // Fetch server info
+        fetch('/server-info')
+            .then(response => response.json())
+            .then(data => {
+                localStorage.setItem('userUrl', data.url);
+                localStorage.setItem('userIpAddress', data.ip);
+            });
+
+        // Fetch user data from the backend
+        fetch('/dashboard-data')
+            .then(response => response.json())
+            .then(user => {
+                // Display user details on the dashboard
+                document.getElementById('user-first-name').textContent = user.first_name;
+                document.getElementById('user-last-name').textContent = user.last_name;
+                document.getElementById('user-email').textContent = user.email;
+                document.getElementById('user-mobile').textContent = user.mobile;
+                document.getElementById('user-password').textContent = 'Show Password'; // Set clickable text for password
+
+                // Store plain password in localStorage for easy access
+                localStorage.setItem('userPassword', user.plain_password);
+
+                // Display URL and IP address from localStorage
+                const userUrl = localStorage.getItem('userUrl');
+                const userIpAddress = localStorage.getItem('userIpAddress');
+                document.getElementById('user-url').textContent = userUrl ? userUrl : 'Not Available';
+                document.getElementById('user-ip-address').textContent = userIpAddress ? userIpAddress : 'Not Available';
+            })
+            .catch(error => console.error('Error fetching user data:', error));
+
+        // Display password in an alert when password text is clicked
+        document.getElementById('user-password').addEventListener('click', function() {
+            const password = localStorage.getItem('userPassword');
+            alert(`Your password is: ${password}`);
+        });
+
+        // Log out functionality
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            alert('Logged out successfully!');
+            localStorage.clear();  // Clear the stored data
+            window.location.href = 'signin.html';  // Redirect to sign-in page
+        });
+    </script>
+</body>
+</html>
