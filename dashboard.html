@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Password Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="container">
+            <h1 class="left-align">Dashboard</h1>
+        </div>
+    </header>
+
+    <main>
+        <section id="dashboard" class="hero-section">
+            <div class="container">
+                <h2>Welcome to your Dashboard</h2>
+                <table border="1" cellpadding="10">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Password</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="user-email"></td>
+                            <td id="user-password"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <button id="logout-btn" class="btn">Log Out</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Retrieve stored user data from localStorage
+        const userEmail = localStorage.getItem('userEmail');
+        const userPassword = localStorage.getItem('userPassword');
+
+        // Display the user's email and password in the table
+        document.getElementById('user-email').textContent = userEmail ? userEmail : 'Not Signed In';
+        document.getElementById('user-password').textContent = userPassword ? userPassword : 'Not Available';
+
+        // Log out functionality
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            alert('Logged out successfully!');
+            localStorage.clear();  // Clear the stored data
+            window.location.href = 'signin.html';  // Redirect to sign-in page
+        });
+    </script>
+</body>
+</html>
