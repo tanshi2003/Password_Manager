@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 const os = require('os');
 const session = require('express-session');
+const nodemailer = require('nodemailer');
 
 const app = express();
 
@@ -41,6 +42,139 @@ app.listen(3000, () => {
     console.log('Server is running on port 3000');
 });
 
+// Nodemailer transporter configuration
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'tanshikhandelwal03@gmail.com', // Replace with your email
+        pass: 'zdkf iggg feci imkt'   // Replace with your app password
+    }
+});
+
+// Serve Reset Password Page
+app.get('/reset-password', (req, res) => {
+    const { token } = req.query;
+    // Render a simple HTML form to reset the password
+    res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Reset Password</title>
+        </head>
+        <body>
+            <h2>Reset Password</h2>
+            <form action="/reset-password" method="POST">
+                <input type="hidden" name="token" value="${token}" required>
+                <div>
+                    <label for="new-password">New Password:</label>
+                    <input type="password" id="new-password" name="new-password" required>
+                </div>
+                <div>
+                    <label for="confirm-password">Confirm Password:</label>
+                    <input type="password" id="confirm-password" name="confirm-password" required>
+                </div>
+                <button type="submit">Reset Password</button>
+            </form>
+        </body>
+        </html>
+    `);
+});
+
+// Handle Reset Password Request
+app.post('/reset-password', (req, res) => {
+    const { token, 'new-password': newPassword, 'confirm-password': confirmPassword } = req.body;
+
+    if (newPassword !== confirmPassword) {
+        return res.status(400).send('Passwords do not match.');
+    }
+
+    // Find the user by reset token
+    const sql = 'SELECT * FROM users WHERE reset_token = ?';
+    db.query(sql, [token], (err, results) => {
+        if (err) throw err;
+        if (results.length === 0) {
+            return res.status(400).send('Invalid or expired reset token.');
+        }
+
+        const user = results[0];
+        // Hash the new password
+        bcrypt.hash(newPassword, 10, (hashErr, hash) => {
+            if (hashErr) throw hashErr;
+
+            // Log hashed password
+            console.log('Hashed Password:', hash);
+
+            // Update the user's password and clear the reset token
+            const updateSql = 'UPDATE users SET password = ?, plain_password = ? , reset_token = NULL WHERE id = ?';
+            db.query(updateSql, [hash, newPassword, user.id], (updateErr, result) => {
+                if (updateErr) throw updateErr;
+
+                // Log the result of the update query
+                console.log('Updated password in DB for user:', user.id, 'Result:', result);
+                
+                // Verify if the password update was successful
+                if (result.changedRows === 1) {
+                    console.log('Password has been successfully reset for user ID:', user.id);
+
+                    // Update the session with the new password after reset
+                    req.session.user = req.session.user || {};
+                    req.session.user.password = hash;
+      
+                    req.session.user.plain_password = newPassword;
+
+                    res.send('Password has been successfully reset.');
+                } else {
+                    console.error('Failed to update the password for user ID:', user.id);
+                    res.status(500).send('Failed to update the password.');
+                }
+            });
+        });
+    });
+});
+
+// Forget Password Route
+app.post('/forgot-password', (req, res) => {
+    const { email } = req.body;
+
+    // Check if the email exists in the database
+    const sql = 'SELECT * FROM users WHERE email = ?';
+    db.query(sql, [email], (err, results) => {
+        if (err) throw err;
+        if (results.length === 0) {
+            return res.status(400).json({ message: 'Email not found' });
+        }
+
+        // Generate a reset token
+        const resetToken = Math.random().toString(36).substr(2);
+        console.log('Generated reset token:', resetToken); // Log the generated reset token
+        const resetLink = `http://localhost:3000/reset-password?token=${resetToken}`;
+
+        // Save the reset token in the database
+        const updateSql = 'UPDATE users SET reset_token = ? WHERE email = ?';
+        db.query(updateSql, [resetToken, email], (updateErr, result) => {
+            if (updateErr) throw updateErr;
+            console.log('Updated reset token in DB for email:', email, 'Result:', result); // Log the DB update result
+
+            // Send the reset link via email
+            const mailOptions = {
+                from: 'tanshikhandelwal03@gmail.com', // Replace with your email
+                to: email,
+                subject: 'Password Reset',
+                text: `Please use the following link to reset your password: ${resetLink}`
+            };
+
+            transporter.sendMail(mailOptions, (mailErr, info) => {
+                if (mailErr) {
+                    console.error('Error sending email:', mailErr);
+                    return res.status(500).json({ message: 'Failed to send email' });
+                }
+                res.json({ message: 'Password reset link sent to email' });
+            });
+        });
+    });
+});
 // Serve Home Page
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'home.html'));
@@ -90,7 +224,7 @@ app.post('/signin', (req, res) => {
             }
 
             // Store user details in session
-            req.session.user = user;
+            req.session.user = { id: user.id, email: user.email, password: user.password }; // Include other fields as needed
             res.json({ message: 'User authenticated successfully', user });
         });
     });
@@ -128,7 +262,6 @@ const getIpAddress = () => {
     }
     return '0.0.0.0';
 };
-
 // Get hostname
 const getHostName = (req) => {
     return req.protocol + '://' + req.get('host');

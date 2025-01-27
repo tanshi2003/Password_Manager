@@ -20,14 +20,18 @@
                 <p>Please sign in to access your secure password vault.</p>
 
                 <!-- Sign In Form -->
-                <form id="signin-form" action="/signin" method="POST">
+                <form id="signin-form" action="/signin" method="POST" autocomplete="on">
+                    <div class="form-group">
+                        <label for="first_name">First Name <span class="required">*</span></label>
+                        <input type="text" id="first_name" name="first_name" placeholder="Enter your first name" required autocomplete="given-name">
+                    </div>
                     <div class="form-group">
                         <label for="email">Email <span class="required">*</span></label>
-                        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                        <input type="email" id="email" name="email" placeholder="Enter your email" required autocomplete="email">
                     </div>
                     <div class="form-group">
                         <label for="password">Password <span class="required">*</span></label>
-                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
                     </div>
                     <button type="submit" class="btn">Sign In</button>
                 </form>
@@ -44,43 +48,12 @@
             <span class="close-btn">&times;</span>
             <h3>Reset Password</h3>
             <p>Enter your email address to receive a password reset link.</p>
-            <input type="email" id="reset-email" placeholder="Enter your email" required>
+            <input type="email" id="reset-email" placeholder="Enter your email" required autocomplete="email">
             <button id="reset-password-btn" class="btn btn-secondary">Send Reset Link</button>
             <p id="reset-message" style="color: green; display: none;">A password reset link has been sent to your email!</p>
         </div>
     </div>
 
-    <script>
-        document.getElementById('signin-form').addEventListener('submit', function (e) {
-            e.preventDefault();  // Prevent default form submission
-
-            // Get user input values
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            // Send POST request to the server
-            fetch('/signin', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message) {
-                    // Store user details in localStorage
-                    localStorage.setItem('userFirst_name', data.user.first_name);
-                    localStorage.setItem('userEmail', data.user.email);
-
-                    // Redirect to the dashboard
-                    window.location.href = 'dashboard.html';
-                } else {
-                    alert('Sign-in failed. Please try again.');
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
