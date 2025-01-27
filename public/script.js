@@ -76,44 +76,100 @@ themeSwitch.addEventListener('click', () => {
     }
 });
 
-// Forgot Password Modal
-const forgotPasswordLink = document.getElementById('forgot-password-link');
-const modal = document.getElementById('forgot-password-modal');
-const closeBtn = document.querySelector('.close-btn');
-const resetButton = document.getElementById('reset-password-btn');
-const resetEmail = document.getElementById('reset-email');
-const resetMessage = document.getElementById('reset-message');
+document.addEventListener('DOMContentLoaded', () => {
+    const forgotPasswordLink = document.getElementById('forgot-password-link');
+    const modal = document.getElementById('forgot-password-modal');
+    const closeBtn = document.querySelector('.close-btn');
+    const resetButton = document.getElementById('reset-password-btn');
+    const resetEmail = document.getElementById('reset-email');
+    const resetMessage = document.getElementById('reset-message');
 
-// Show Modal
-forgotPasswordLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    modal.style.display = 'block';
-});
-
-// Close Modal
-closeBtn.addEventListener('click', () => {
-    modal.style.display = 'none';
-});
-
-// Simulate Sending Email
-resetButton.addEventListener('click', () => {
-    const email = resetEmail.value;
-
-    if (email) {
-        // Simulating email sent process
-        setTimeout(() => {
-            resetMessage.style.display = 'block';
-            resetEmail.value = ''; // Clear email field after sending
-        }, 1000);
+    // Show Modal
+    if (forgotPasswordLink) {
+        forgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Forgot Password link clicked');
+            if (modal) {
+                modal.style.display = 'block';
+            }
+        });
     }
+
+    // Close Modal
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            console.log('Close button clicked');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+
+    // Simulate Sending Email
+    if (resetButton) {
+        resetButton.addEventListener('click', () => {
+            const email = resetEmail ? resetEmail.value : '';
+            console.log('Reset button clicked, Email:', email);
+
+            if (email) {
+                // Simulating email sent process
+                setTimeout(() => {
+                    console.log('Email sent simulation complete');
+                    if (resetMessage) {
+                        resetMessage.style.display = 'block';
+                    }
+                    if (resetEmail) {
+                        resetEmail.value = ''; // Clear email field after sending
+                    }
+                }, 1000);
+            } else {
+                console.log('Email input is empty');
+            }
+        });
+    }
+
+    // Close Modal when clicking outside
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            console.log('Clicked outside modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+    });
 });
 
-// Close Modal when clicking outside
-window.addEventListener('click', (e) => {
-    if (e.target === modal) {
-        modal.style.display = 'none';
-    }
+document.getElementById('signin-form').addEventListener('submit', function (e) {
+    e.preventDefault();  // Prevent default form submission
+
+    // Get user input values
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    // Send POST request to the server
+    fetch('/signin', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            // Store user details in localStorage
+            localStorage.setItem('userFirst_name', data.user.first_name);
+            localStorage.setItem('userEmail', data.user.email);
+
+            // Redirect to the dashboard
+            window.location.href = 'dashboard.html';
+        } else {
+            alert('Sign-in failed. Please try again.');
+        }
+    })
+    .catch(error => console.error('Error:', error));
 });
+
 
 // Logout Functionality (Simulating logout by redirecting to the login page)
 document.getElementById('logout-btn').addEventListener('click', function() {
