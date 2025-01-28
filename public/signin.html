@@ -37,7 +37,7 @@
                 </form>
 
                 <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
-                <p><a href="#" id="forgot-password-link">Forgot Password?</a></p>
+                <p><a href="#" id="forgot-password-link">Update Password?</a></p>
             </div>
         </section>
     </main>
@@ -46,13 +46,59 @@
     <div id="forgot-password-modal" class="modal" style="display: none;">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
-            <h3>Reset Password</h3>
-            <p>Enter your email address to receive a password reset link.</p>
+            <h3>Update Password</h3>
+            <p>Enter your email address to receive a password update link.</p>
             <input type="email" id="reset-email" placeholder="Enter your email" required autocomplete="email">
-            <button id="reset-password-btn" class="btn btn-secondary">Send Reset Link</button>
-            <p id="reset-message" style="color: green; display: none;">A password reset link has been sent to your email!</p>
+            <button id="reset-password-btn" class="btn btn-secondary">Send Update Link</button>
+            <p id="reset-message" style="color: green; display: none;">A password update link has been sent to your email!</p>
+            <p id="reset-error-message" style="color: red; display: none;">Invalid email address. Please use a valid Gmail address.</p>
         </div>
     </div>
+
+
+    <script>
+        document.getElementById('reset-password-btn').addEventListener('click', function() {
+            const email = document.getElementById('reset-email').value;
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+
+            // Check if the email is a valid Gmail address
+            if (!emailRegex.test(email)) {
+                document.getElementById('reset-error-message').style.display = 'block';
+                document.getElementById('reset-message').style.display = 'none';
+                return;
+            }
+
+            // Hide error message if email is valid
+            document.getElementById('reset-error-message').style.display = 'none';
+
+            // Send POST request to the server
+            fetch('/forgot-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Password update link sent to email') {
+                    document.getElementById('reset-message').style.display = 'block';
+                } else {
+                    document.getElementById('reset-error-message').style.display = 'block';
+                    document.getElementById('reset-error-message').textContent = data.message;
+                }
+            })
+            .catch(error => {
+                document.getElementById('reset-error-message').style.display = 'block';
+                document.getElementById('reset-error-message').textContent = 'Failed to send email. Please try again.';
+            });
+        });
+
+        // Close modal function (optional)
+        document.querySelector('.close-btn').addEventListener('click', function() {
+            document.getElementById('forgot-password-modal').style.display = 'none';
+        });
+    </script>
 
     <script src="script.js"></script>
 </body>

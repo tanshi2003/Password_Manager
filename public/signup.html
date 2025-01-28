@@ -17,7 +17,7 @@
         <section id="signup" class="hero-section">
             <div class="container">
                 <h2>Create an Account</h2>
-                <form id="signup-form" action="/signup" method="POST">
+                <form id="signup-form" action="/signup" method="POST" autocomplete="on">
                     <div class="form-group">
                         <label for="first-name">First Name <span class="required">*</span></label>
                         <input type="text" id="first-name" name="first_name" placeholder="Enter your first name" required>
@@ -37,6 +37,7 @@
                     <div class="form-group">
                         <label for="password">Password <span class="required">*</span></label>
                         <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                        <button type="button" id="generate-password" class="btn">Generate Strong Password</button>
                     </div>
                     <div class="form-group">
                         <label for="confirm-password">Confirm Password <span class="required">*</span></label>
@@ -44,7 +45,7 @@
                     </div>
                     <button type="submit" class="btn">Sign Up</button>
                 </form>
-                <p>already have an account? <a href="signin.html">Sign In</a></p>
+                <p>Already have an account? <a href="signin.html">Sign In</a></p>
                 <div id="success-message" style="display: none;">
                     <p>Registration successful! Redirecting to the <a href="signin.html">Sign-In</a> page...</p>
                 </div>
@@ -54,7 +55,25 @@
     </main>
 
     <script>
-        document.getElementById('signup-form').addEventListener('submit', function (e) {
+        // Function to generate a strong password
+        function generateStrongPassword() {
+            const length = 12;
+            const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=";
+            let password = "";
+            for (let i = 0, n = charset.length; i < length; ++i) {
+                password += charset.charAt(Math.floor(Math.random() * n));
+            }
+            return password;
+        }
+
+        // Event listener for the "Generate Strong Password" button
+        document.getElementById('generate-password').addEventListener('click', function () {
+            const strongPassword = generateStrongPassword();
+            document.getElementById('password').value = strongPassword;
+            document.getElementById('confirm-password').value = strongPassword;
+        });
+
+       document.getElementById('signup-form').addEventListener('submit', function (e) {
             e.preventDefault();  // Prevent the form from actually submitting
 
             // Get form data

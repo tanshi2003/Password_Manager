@@ -1,3 +1,4 @@
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
@@ -51,20 +52,20 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Serve Reset Password Page
+// Serve Update Password Page
 app.get('/reset-password', (req, res) => {
     const { token } = req.query;
-    // Render a simple HTML form to reset the password
+    // Render a simple HTML form to update the password
     res.send(`
         <!DOCTYPE html>
         <html lang="en">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Reset Password</title>
+            <title>Update Password</title>
         </head>
         <body>
-            <h2>Reset Password</h2>
+            <h2>Update Password</h2>
             <form action="/reset-password" method="POST">
                 <input type="hidden" name="token" value="${token}" required>
                 <div>
@@ -75,14 +76,14 @@ app.get('/reset-password', (req, res) => {
                     <label for="confirm-password">Confirm Password:</label>
                     <input type="password" id="confirm-password" name="confirm-password" required>
                 </div>
-                <button type="submit">Reset Password</button>
+                <button type="submit">Update Password</button>
             </form>
         </body>
         </html>
     `);
 });
 
-// Handle Reset Password Request
+// Handle Update Password Request
 app.post('/reset-password', (req, res) => {
     const { token, 'new-password': newPassword, 'confirm-password': confirmPassword } = req.body;
 
@@ -107,7 +108,7 @@ app.post('/reset-password', (req, res) => {
             console.log('Hashed Password:', hash);
 
             // Update the user's password and clear the reset token
-            const updateSql = 'UPDATE users SET password = ?, plain_password = ? , reset_token = NULL WHERE id = ?';
+            const updateSql = 'UPDATE users SET password = ?, plain_password = ?, reset_token = NULL WHERE id = ?';
             db.query(updateSql, [hash, newPassword, user.id], (updateErr, result) => {
                 if (updateErr) throw updateErr;
 
@@ -116,15 +117,14 @@ app.post('/reset-password', (req, res) => {
                 
                 // Verify if the password update was successful
                 if (result.changedRows === 1) {
-                    console.log('Password has been successfully reset for user ID:', user.id);
+                    console.log('Password has been successfully updated for user ID:', user.id);
 
                     // Update the session with the new password after reset
                     req.session.user = req.session.user || {};
                     req.session.user.password = hash;
-      
                     req.session.user.plain_password = newPassword;
 
-                    res.send('Password has been successfully reset.');
+                    res.send('Password has been successfully updated.');
                 } else {
                     console.error('Failed to update the password for user ID:', user.id);
                     res.status(500).send('Failed to update the password.');
@@ -162,7 +162,7 @@ app.post('/forgot-password', (req, res) => {
                 from: 'tanshikhandelwal03@gmail.com', // Replace with your email
                 to: email,
                 subject: 'Password Reset',
-                text: `Please use the following link to reset your password: ${resetLink}`
+                text: `Please use the following link to update your password: ${resetLink}`
             };
 
             transporter.sendMail(mailOptions, (mailErr, info) => {
@@ -170,11 +170,12 @@ app.post('/forgot-password', (req, res) => {
                     console.error('Error sending email:', mailErr);
                     return res.status(500).json({ message: 'Failed to send email' });
                 }
-                res.json({ message: 'Password reset link sent to email' });
+                res.json({ message: 'Password update link sent to email' });
             });
         });
     });
 });
+
 // Serve Home Page
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'home.html'));
@@ -249,7 +250,6 @@ app.get('/dashboard-data', (req, res) => {
         res.json(user);
     });
 });
-
 // Get IP address
 const getIpAddress = () => {
     const interfaces = os.networkInterfaces();
