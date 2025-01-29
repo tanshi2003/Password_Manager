@@ -36,12 +36,23 @@
                     </div>
                     <div class="form-group">
                         <label for="password">Password <span class="required">*</span></label>
-                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
-                        <button type="button" id="generate-password" class="btn">Generate Strong Password</button>
+                        <div class="password-container">
+                            <button type="button" id="show-passwd" class="toggle-password">
+                                <img src="./eye_open.svg" alt="Show Password" />
+                            </button>
+                            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                            
+                        </div>
+                        
                     </div>
                     <div class="form-group">
                         <label for="confirm-password">Confirm Password <span class="required">*</span></label>
-                        <input type="password" id="confirm-password" name="confirm_password" placeholder="Confirm your password" required>
+                        <div class="password-container">
+                            <input type="password" id="confirm-password" name="confirm_password" placeholder="Confirm your password" required>
+                            <button type="button" id="show-confirm-passwd" class="toggle-password">
+                                <img src="./eye_open.svg" alt="Show Password" />
+                            </button>
+                        </div>
                     </div>
                     <button type="submit" class="btn">Sign Up</button>
                 </form>
@@ -55,25 +66,19 @@
     </main>
 
     <script>
-        // Function to generate a strong password
-        function generateStrongPassword() {
-            const length = 12;
-            const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=";
-            let password = "";
-            for (let i = 0, n = charset.length; i < length; ++i) {
-                password += charset.charAt(Math.floor(Math.random() * n));
-            }
-            return password;
+        // Function to validate email format
+        function validateEmail(email) {
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+            return emailRegex.test(email);
         }
 
-        // Event listener for the "Generate Strong Password" button
-        document.getElementById('generate-password').addEventListener('click', function () {
-            const strongPassword = generateStrongPassword();
-            document.getElementById('password').value = strongPassword;
-            document.getElementById('confirm-password').value = strongPassword;
-        });
-
-       document.getElementById('signup-form').addEventListener('submit', function (e) {
+        // Function to validate mobile number format
+        function validateMobileNumber(mobile) {
+            const mobileRegex = /^\d{10}$/;
+            return mobileRegex.test(mobile);
+        }
+        // Event listeners for form submission
+        document.getElementById('signup-form').addEventListener('submit', function (e) {
             e.preventDefault();  // Prevent the form from actually submitting
 
             // Get form data
@@ -83,6 +88,18 @@
             const mobile = document.getElementById('mobile').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
+
+            // Validate email format
+            if (!validateEmail(email)) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+
+            // Validate mobile number format
+            if (!validateMobileNumber(mobile)) {
+                alert('Please enter a valid 10-digit mobile number.');
+                return;
+            }
 
             if (password !== confirmPassword) {
                 alert('Passwords do not match!');
@@ -123,6 +140,36 @@
                 document.getElementById('error-message').textContent = error.message;
                 document.getElementById('error-message').style.display = 'block';
             });
+        });
+
+        // Toggle password visibility
+        document.getElementById('show-passwd').addEventListener('click', function () {
+            const passwordField = document.getElementById('password');
+            const icon = this.querySelector('img');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.src = "./eye_closed.svg";
+                icon.alt = "Hide Password";
+            } else {
+                passwordField.type = 'password';
+                icon.src = "./eye_open.svg";
+                icon.alt = "Show Password";
+            }
+        });
+
+        // Toggle confirm password visibility
+        document.getElementById('show-confirm-passwd').addEventListener('click', function () {
+            const confirmPasswordField = document.getElementById('confirm-password');
+            const icon = this.querySelector('img');
+            if (confirmPasswordField.type === 'password') {
+                confirmPasswordField.type = 'text';
+                icon.src = "./eye_closed.svg";
+                icon.alt = "Hide Password";
+            } else {
+                confirmPasswordField.type = 'password';
+                icon.src = "./eye_open.svg";
+                icon.alt = "Show Password";
+            }
         });
     </script>
 </body>

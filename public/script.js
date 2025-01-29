@@ -9,7 +9,20 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     });
-
+        // Password Toggle
+        const show_pw_btn = document.querySelector('#show-passwd');
+        if (show_pw_btn) {
+            const show_pw_icon = show_pw_btn.querySelector('img');
+            const pw_input = document.querySelector('#password');
+    
+            show_pw_btn.addEventListener('click', () => {
+                pw_input.type = pw_input.type === 'password' ? 'text' : 'password';
+                show_pw_icon.src = show_pw_icon.src.includes('open') 
+                    ? 'eye_closed.svg' 
+                    : 'eye_open.svg';
+            });
+        }
+    
     // Sign Up Form Submission
     const signupForm = document.getElementById('signup-form');
     if (signupForm) {
@@ -124,7 +137,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (modal) modal.style.display = 'none';
         }
     });
-
+  // Hide button when clicking outside the password field
+  document.addEventListener("click", function (event) {
+    if (!passwordInput.contains(event.target) && !generateBtn.contains(event.target)) {
+        generateBtn.style.display = "none";
+    }
+});
     // Logout Functionality
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {

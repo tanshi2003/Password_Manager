@@ -157,21 +157,26 @@ app.post('/forgot-password', (req, res) => {
             if (updateErr) throw updateErr;
             console.log('Updated reset token in DB for email:', email, 'Result:', result); // Log the DB update result
 
-            // Send the reset link via email
-            const mailOptions = {
-                from: 'tanshikhandelwal03@gmail.com', // Replace with your email
-                to: email,
-                subject: 'Password Reset',
-                text: `Please use the following link to update your password: ${resetLink}`
-            };
+            // Send the reset link via email, only if the token is successfully updated in DB
+            if (result.affectedRows === 1) {
+                const mailOptions = {
+                    from: 'tanshikhandelwal03@gmail.com', // Replace with your email
+                    to: email,
+                    subject: 'Password Reset',
+                    text: `Please use the following link to update your password: ${resetLink}`
+                };
 
-            transporter.sendMail(mailOptions, (mailErr, info) => {
-                if (mailErr) {
-                    console.error('Error sending email:', mailErr);
-                    return res.status(500).json({ message: 'Failed to send email' });
-                }
-                res.json({ message: 'Password update link sent to email' });
-            });
+                transporter.sendMail(mailOptions, (mailErr, info) => {
+                    if (mailErr) {
+                        console.error('Error sending email:', mailErr);
+                        return res.status(500).json({ message: 'Failed to send email' });
+                    }
+                    res.json({ message: 'Password update link sent to email' });
+                });
+            } else {
+                console.error('Failed to update the reset token in DB for email:', email);
+                res.status(500).json({ message: 'Failed to generate reset link. Try again later.' });
+            }
         });
     });
 });

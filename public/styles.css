@@ -12,6 +12,50 @@ body {
     line-height: 1.6;
 }
 
+.password-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.password-container input {
+    width: 100%;
+    padding-right: 40px; /* Eye icon ke liye space */
+    height: 40px; /* Ensure input height is consistent */
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px; /* Ensure it stays on the right */
+    top: 10%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 49px; /* Same height as input box */
+}
+
+.toggle-password img {
+    width: 20px;
+    height: 20px;
+}
+
+/* Ensure no hover issue */
+.toggle-password:hover {
+    background: none;
+}
+
+/* Fix if flexbox is causing issues */
+.password-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+
 /* Navbar Styling */
 .navbar {
     background-color: white;  /* Light background for the navbar */
@@ -76,7 +120,7 @@ body {
 }
 
 .btn:hover {
-    background-color:#28a745 ;
+    background-color: #218838;
 }
 
 /* Hero Section (Sign In Section) */
@@ -171,6 +215,7 @@ button:hover {
         padding: 8px;
     }
 }
+
 /* Links */
 a {
     color: #007bff;
@@ -243,7 +288,6 @@ input:invalid {
     border-color: rgb(163, 151, 151);
 }
 
-
 #success-message {
     text-align: center;
     margin-top: 20px;
@@ -257,46 +301,23 @@ input:invalid {
     color: white;
     text-decoration: underline;
 }
-/* 
-.dark-theme {
-    background-color: #333;
-    color: white;
+
+/* Link Style */
+.link-style {
+    background: none;
+    color: blue !important;  /* Use !important to enforce the blue color */
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: underline;
 }
 
-.dark-theme input {
-    background-color: #444;
-    border-color: #555;
-    color: white;
+.link-style:hover {
+    color: blue !important;  /* Ensure the color remains blue when hovered */
 }
 
-.dark-theme input::placeholder {
-    color: #ccc;
+.link-style:visited {
+    color: blue !important;  /* Ensure visited links remain blue */
 }
 
-.dark-theme .navbar {
-    background-color: #222;
-    color: white;
-}
-
-.dark-theme button[type="submit"] {
-    background-color: #444;
-}
-
-.dark-theme button[type="submit"]:hover {
-    background-color: #555;
-}
-
-@media (max-width: 768px) {
-    .signup-section .container {
-        padding: 1.5rem;
-    }
-
-    .signup-section h2 {
-        font-size: 1.5rem;
-    }
-
-    button[type="submit"] {
-        font-size: 1rem;
-        padding: 0.75rem;
-    }
-} */

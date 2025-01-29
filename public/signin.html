@@ -57,6 +57,9 @@
 
 
     <script>
+        document.getElementById('forgot-password-link').addEventListener('click', function() {
+            document.getElementById('forgot-password-modal').style.display = 'block';
+        });
         document.getElementById('reset-password-btn').addEventListener('click', function() {
             const email = document.getElementById('reset-email').value;
             const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
@@ -97,6 +100,35 @@
         // Close modal function (optional)
         document.querySelector('.close-btn').addEventListener('click', function() {
             document.getElementById('forgot-password-modal').style.display = 'none';
+        });
+        // Toggle password visibility
+        document.getElementById('show-passwd').addEventListener('click', function () {
+            const passwordField = document.getElementById('password');
+            const icon = this.querySelector('img');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.src = "./eye_closed.svg";
+                icon.alt = "Hide Password";
+            } else {
+                passwordField.type = 'password';
+                icon.src = "./eye_open.svg";
+                icon.alt = "Show Password";
+            }
+        });
+
+        // Toggle confirm password visibility
+        document.getElementById('show-confirm-passwd').addEventListener('click', function () {
+            const confirmPasswordField = document.getElementById('confirm-password');
+            const icon = this.querySelector('img');
+            if (confirmPasswordField.type === 'password') {
+                confirmPasswordField.type = 'text';
+                icon.src = "./eye_closed.svg";
+                icon.alt = "Hide Password";
+            } else {
+                confirmPasswordField.type = 'password';
+                icon.src = "./eye_open.svg";
+                icon.alt = "Show Password";
+            }
         });
     </script>
 
