@@ -22,16 +22,17 @@
                 <!-- Sign In Form -->
                 <form id="signin-form" action="/signin" method="POST" autocomplete="on">
                     <div class="form-group">
-                        <label for="first_name">First Name <span class="required">*</span></label>
-                        <input type="text" id="first_name" name="first_name" placeholder="Enter your first name" required autocomplete="given-name">
-                    </div>
-                    <div class="form-group">
                         <label for="email">Email <span class="required">*</span></label>
                         <input type="email" id="email" name="email" placeholder="Enter your email" required autocomplete="email">
                     </div>
                     <div class="form-group">
                         <label for="password">Password <span class="required">*</span></label>
-                        <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+                        <div class="password-container">
+                            <button type="button" id="show-passwd" class="toggle-password">
+                                <img src="./eye_open.svg" alt="Show Password" />
+                            </button>
+                            <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+                        </div>
                     </div>
                     <button type="submit" class="btn">Sign In</button>
                 </form>
@@ -101,35 +102,7 @@
         document.querySelector('.close-btn').addEventListener('click', function() {
             document.getElementById('forgot-password-modal').style.display = 'none';
         });
-        // Toggle password visibility
-        document.getElementById('show-passwd').addEventListener('click', function () {
-            const passwordField = document.getElementById('password');
-            const icon = this.querySelector('img');
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-                icon.src = "./eye_closed.svg";
-                icon.alt = "Hide Password";
-            } else {
-                passwordField.type = 'password';
-                icon.src = "./eye_open.svg";
-                icon.alt = "Show Password";
-            }
-        });
-
-        // Toggle confirm password visibility
-        document.getElementById('show-confirm-passwd').addEventListener('click', function () {
-            const confirmPasswordField = document.getElementById('confirm-password');
-            const icon = this.querySelector('img');
-            if (confirmPasswordField.type === 'password') {
-                confirmPasswordField.type = 'text';
-                icon.src = "./eye_closed.svg";
-                icon.alt = "Hide Password";
-            } else {
-                confirmPasswordField.type = 'password';
-                icon.src = "./eye_open.svg";
-                icon.alt = "Show Password";
-            }
-        });
+        // ...removed password toggle event listeners for non-existent elements...
     </script>
 
     <script src="script.js"></script>

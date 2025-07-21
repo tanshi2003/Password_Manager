@@ -68,9 +68,21 @@
                 localStorage.setItem('userIpAddress', data.ip);
             });
 
-        // Fetch user data from the backend
+        // Fetch user data from the backend with error handling
         fetch('/dashboard-data')
-            .then(response => response.json())
+            .then(async response => {
+                if (!response.ok) {
+                    // Try to parse error message if available
+                    let errorMsg = 'You are not logged in or an error occurred.';
+                    try {
+                        const err = await response.json();
+                        if (err && err.message) errorMsg = err.message;
+                    } catch (e) {}
+                    showDashboardError(errorMsg);
+                    throw new Error(errorMsg);
+                }
+                return response.json();
+            })
             .then(user => {
                 // Display user details on the dashboard
                 document.getElementById('user-first-name').textContent = user.first_name;
@@ -88,12 +100,35 @@
                 document.getElementById('user-url').textContent = userUrl ? userUrl : 'Not Available';
                 document.getElementById('user-ip-address').textContent = userIpAddress ? userIpAddress : 'Not Available';
             })
-            .catch(error => console.error('Error fetching user data:', error));
+            .catch(error => {
+                // Already handled above, but log for debugging
+                console.error('Error fetching user data:', error);
+            });
+
+        // Show error message on dashboard
+        function showDashboardError(msg) {
+            const container = document.querySelector('.container');
+            const table = container.querySelector('table');
+            if (table) table.style.display = 'none';
+            let errorDiv = document.getElementById('dashboard-error');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.id = 'dashboard-error';
+                errorDiv.style.color = 'red';
+                errorDiv.style.margin = '20px 0';
+                container.insertBefore(errorDiv, container.firstChild.nextSibling);
+            }
+            errorDiv.textContent = msg;
+        }
 
         // Display password in an alert when password text is clicked
         document.getElementById('user-password').addEventListener('click', function() {
             const password = localStorage.getItem('userPassword');
-            alert(`Your password is: ${password}`);
+            if (password) {
+                alert(`Your password is: ${password}`);
+            } else {
+                alert('Password not available. Please log in again.');
+            }
         });
 
         // Log out functionality

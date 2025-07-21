@@ -30,15 +30,17 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault(); // Prevent form submission
 
             const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('password_confirm').value;
+            const confirmPasswordField = document.getElementById('confirm-password');
+            const confirmPassword = confirmPasswordField ? confirmPasswordField.value : '';
 
-            if (password !== confirmPassword) {
+            if (confirmPasswordField && password !== confirmPassword) {
                 alert('Passwords do not match!');
                 return;
             }
 
             // Simulate success message
-            document.getElementById('success-message').style.display = 'block';
+            const successMsg = document.getElementById('success-message');
+            if (successMsg) successMsg.style.display = 'block';
 
             setTimeout(() => {
                 window.location.href = 'signin.html'; // Redirect to sign-in page
@@ -55,20 +57,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const signinButton = document.querySelector('#signin-form button[type="submit"]');
             signinButton.disabled = true; // Disable button temporarily
 
-            const first_name = document.getElementById('first_name').value;
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
             fetch('/signin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ first_name, email, password }),
+                body: JSON.stringify({ email, password }),
             })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.message) {
-                        localStorage.setItem('userFirst_name', data.user.first_name);
-                        localStorage.setItem('userEmail', data.user.email);
+                    if (data.message && data.user) {
+                        localStorage.setItem('userFirst_name', data.user.first_name || '');
+                        localStorage.setItem('userEmail', data.user.email || '');
                         window.location.href = 'dashboard.html';
                     } else {
                         alert('Sign-in failed. Please try again.');
@@ -137,12 +138,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (modal) modal.style.display = 'none';
         }
     });
-  // Hide button when clicking outside the password field
-  document.addEventListener("click", function (event) {
-    if (!passwordInput.contains(event.target) && !generateBtn.contains(event.target)) {
-        generateBtn.style.display = "none";
-    }
-});
+    // Hide button when clicking outside the password field (guarded)
+    // Commented out because passwordInput and generateBtn are not defined in all pages
+    // document.addEventListener("click", function (event) {
+    //   if (typeof passwordInput !== 'undefined' && typeof generateBtn !== 'undefined') {
+    //     if (!passwordInput.contains(event.target) && !generateBtn.contains(event.target)) {
+    //         generateBtn.style.display = "none";
+    //     }
+    //   }
+    // });
     // Logout Functionality
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
