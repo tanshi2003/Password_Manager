@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            fetch('/signin', {
+            fetch("https://password-manager-pptl.onrender.com/signin", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             resetButton.disabled = true;
 
-            fetch('/forgot-password', {
+            fetch('https://password-manager-pptl.onrender.com/forgot-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),
