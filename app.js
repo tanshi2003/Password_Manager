@@ -1,4 +1,4 @@
-
+require("dotenv").config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
@@ -26,11 +26,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // MySQL connection configuration
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'password_manager'
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
 });
+
 
 // Connect to MySQL
 db.connect((err) => {
