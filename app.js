@@ -1,4 +1,5 @@
 require("dotenv").config();
+const cors = require('cors');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql2');
@@ -9,6 +10,9 @@ const session = require('express-session');
 const nodemailer = require('nodemailer');
 
 const app = express();
+
+app.use(cors());
+
 
 // Middleware to parse incoming request bodies
 app.use(bodyParser.urlencoded({ extended: false }));
