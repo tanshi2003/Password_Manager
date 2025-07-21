@@ -1,8 +1,8 @@
 require("dotenv").config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const mysql = require('mysql');
-const bcrypt = require('bcrypt');
+const mysql = require('mysql2');
+const bcrypt = require('bcryptjs');
 const path = require('path');
 const os = require('os');
 const session = require('express-session');
@@ -35,8 +35,11 @@ const db = mysql.createConnection({
 
 // Connect to MySQL
 db.connect((err) => {
-    if (err) throw err;
-    console.log('Connected to the database');
+  if (err) {
+    console.error('DB connection failed:', err);
+    return;
+  }
+  console.log('Connected to MySQL database ✅');
 });
 
 // Start the server
