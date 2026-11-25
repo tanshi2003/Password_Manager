@@ -1,2 +1,18 @@
+# Dependencies
 node_modules/
+
+# Secrets and local configuration
 .env
+.env.*
+!.env.example
+
+# Local data and logs
+*.log
+*.sqlite
+*.db
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
