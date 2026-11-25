@@ -20,26 +20,58 @@ if (JWT_SECRET.length < 32) {
   throw new Error("JWT_SECRET must be configured with a random value of at least 32 characters.");
 }
 
+const useTiDB = Boolean(process.env.TIDB_HOST);
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || process.env.MYSQLHOST,
-  port: Number(process.env.DB_PORT || process.env.MYSQLPORT || 3306),
-  user: process.env.DB_USER || process.env.MYSQLUSER,
-  password: process.env.DB_PASSWORD || process.env.MYSQLPASSWORD,
-  database: process.env.DB_NAME || process.env.MYSQLDATABASE,
+  host: process.env.TIDB_HOST || process.env.DB_HOST || process.env.MYSQLHOST,
+  port: Number(process.env.TIDB_PORT || process.env.DB_PORT || process.env.MYSQLPORT || (useTiDB ? 4000 : 3306)),
+  user: process.env.TIDB_USER || process.env.DB_USER || process.env.MYSQLUSER,
+  password: process.env.TIDB_PASSWORD || process.env.DB_PASSWORD || process.env.MYSQLPASSWORD,
+  database: process.env.TIDB_DATABASE || process.env.DB_NAME || process.env.MYSQLDATABASE,
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 5,
   queueLimit: 0,
   enableKeepAlive: true,
-  ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: true } : undefined
+  ssl: (process.env.TIDB_SSL === "true" || process.env.DB_SSL === "true")
+    ? { minVersion: "TLSv1.2", rejectUnauthorized: true }
+    : undefined
 });
 
-const mailReady = Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS && process.env.SMTP_FROM);
-const transporter = mailReady ? nodemailer.createTransport({
+const smtpReady = Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS && process.env.SMTP_FROM);
+const transporter = smtpReady ? nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT || 587),
   secure: process.env.SMTP_SECURE === "true",
   auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
 }) : null;
+
+const resendReady = Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
+async function sendResetEmail(to, resetUrl) {
+  const subject = "Reset your Password Manager account password";
+  const text = "Use this link within 30 minutes to reset your account password: " + resetUrl;
+  if (resendReady) {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: "Bearer " + process.env.RESEND_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: process.env.EMAIL_FROM,
+        to: [to],
+        subject,
+        text,
+        html: '<p>Use this link within 30 minutes to reset your account password:</p><p><a href="' + resetUrl + '">Reset account password</a></p>'
+      })
+    });
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      throw new Error("Email API returned " + response.status + ": " + detail.slice(0, 300));
+    }
+    return;
+  }
+  if (transporter) {
+    await transporter.sendMail({ from: process.env.SMTP_FROM, to, subject, text });
+    return;
+  }
+  throw new Error("Password-reset email provider is not configured.");
+}
 
 let hasLegacyPlainPasswordColumn = false;
 
@@ -231,7 +263,7 @@ app.get("/api/auth/me", requireAuth, async (req, res, next) => {
 
 app.post("/api/auth/forgot-password", resetLimiter, async (req, res, next) => {
   try {
-    if (!transporter) return res.status(503).json({ message: "Password-reset email is not configured on the backend yet." });
+    if (!transporter && !resendReady) return res.status(503).json({ message: "Password-reset email is not configured. Configure Resend over HTTPS or a supported SMTP provider." });
     const email = cleanEmail(req.body.email);
     if (!validEmail(email)) return res.status(400).json({ message: "Enter a valid email address." });
     const [rows] = await pool.execute("SELECT id, email FROM users WHERE email = ? LIMIT 1", [email]);
@@ -246,12 +278,7 @@ app.post("/api/auth/forgot-password", resetLimiter, async (req, res, next) => {
     );
     const resetUrl = FRONTEND_URL + "?reset=" + encodeURIComponent(token);
     try {
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM,
-        to: user.email,
-        subject: "Reset your Password Manager account password",
-        text: "Use this link within 30 minutes to reset your account password: " + resetUrl
-      });
+      await sendResetEmail(user.email, resetUrl);
     } catch (mailError) {
       await pool.execute("DELETE FROM password_resets WHERE user_id = ?", [user.id]);
       console.error("Password reset email error:", mailError.message);

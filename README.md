@@ -1,131 +1,101 @@
 # Password Manager
 
-An account-based password manager with a static GitHub Pages frontend, a separate Node.js/Express API, and MySQL storage.
+An account-based password manager with a static GitHub Pages frontend, a separate Node.js/Express API, and a MySQL-compatible database.
 
-The browser encrypts the complete vault before synchronising it. MySQL stores the encrypted vault payload, not individual website passwords in readable form.
+## Free hosting architecture
 
-## Architecture
-
-- **Frontend:** `web/`, published by GitHub Pages.
-- **Backend:** `server.js`, deployed as a separate Railway service.
-- **Database:** MySQL. The existing `users` table is reused where its columns match the previous project.
+- **Frontend:** `web/`, deployed on GitHub Pages.
+- **Backend:** `server.js`, deployed as a Render Free Web Service using `render.yaml`.
+- **Database:** TiDB Cloud Starter in MySQL-compatible mode with a zero spending limit.
 - **Account authentication:** bcrypt password hashes and short-lived signed bearer tokens.
-- **Vault encryption:** AES-256-GCM with a PBKDF2-SHA-256 key derived from a separate vault master password.
+- **Vault encryption:** AES-256-GCM with a PBKDF2-SHA-256 key derived from a separate vault master password. Vault data is encrypted in the browser before upload.
 
-There are two separate passwords:
-1. The **account password** signs in to your user account.
-2. The **vault master password** decrypts your saved website credentials.
+The account password signs in to the account. The separate vault master password decrypts saved website credentials.
 
-Resetting the account password does not reset or decrypt the vault master password.
+## Free-tier limitations
 
-## Preserving the existing database
+- Render Free web services spin down after 15 minutes without inbound traffic. A sleeping service takes about a minute to wake. Render can restart a free service at any time and free services do not include persistent disks or always-on availability. Suitable for a hobby project, not a production-critical password manager. See [Render Free services](https://render.com/docs/free) and [Render FAQ](https://render.com/docs/faq).
+- TiDB Cloud Starter offers MySQL-compatible free quotas for eligible initial instances: 5 GiB row storage, 5 GiB columnar storage and 50 million request units per month. Set the monthly spending limit to **0** to remain free; once quota is reached, new connections are denied until the quota resets. See [TiDB Starter plan](https://docs.pingcap.com/tidbcloud/select-cluster-tier/) and [spending limits](https://docs.pingcap.com/tidbcloud/manage-serverless-spend-limit/).
+- Render Free blocks outbound SMTP traffic on ports 25, 465 and 587. Account password-reset email therefore uses the optional Resend HTTPS API. Resend requires a verified sender for real delivery. Without that configuration, normal signup, login and vault syncing work, but the forgot-password email route remains disabled. See [Render SMTP restrictions](https://render.com/articles/can-i-send-email-over-smtp-from-render).
 
-The v2 backend is designed to reuse the existing MySQL `users` table and bcrypt hashes. It does not delete or rewrite existing user rows during startup. It adds two tables:
+These providers are free within the published limits. Do not add a payment method or set a positive TiDB spending limit if your requirement is strictly zero cost. Free quotas and provider policies can change; check the linked provider pages before provisioning.
 
-- `user_vaults`: one encrypted vault payload per account.
-- `password_resets`: hashed, expiring, single-use account reset tokens.
+## 1. Create a TiDB Cloud Starter database
 
-The backend detects whether the old `plain_password` column exists. If it does, new registrations and account password resets write an empty value to that legacy field only. The API never reads or returns that column.
+1. Open [TiDB Cloud](https://tidbcloud.com/) and create/sign in to your account.
+2. Create a **TiDB Cloud Starter** instance in **MySQL-compatible** mode.
+3. Keep the monthly spending limit at **0**. Do not add a card or enable paid overages.
+4. Name the database `password_manager`.
+5. Create a database password and store it privately.
+6. Copy the connection details: host, port, username and password. The port is typically `4000`.
+7. Keep TLS enabled.
 
-**Before reconnecting the backend, take a full MySQL backup and rotate the old database password.** The previous repository contained database credentials in a committed `.env` file and an email app password hard-coded in the old backend. Removing them from the current branch does not erase them from Git history. Rotate the old database password and revoke the old email app password before redeploying.
+TiDB supports the MySQL protocol and the project uses the Node `mysql2` driver with TLS 1.2. See [TiDB Node.js mysql2 guide](https://docs.pingcap.com/tidb/dev/dev-guide-sample-application-nodejs-mysql2/).
 
-The additive migration is in `database/migration-v2.sql`. The optional removal of the old plaintext column is in `database/optional-cleanup-legacy-plaintext.sql`. Do not run the cleanup script until you have a verified backup and have confirmed existing accounts can sign in with their bcrypt hashes.
+## 2. Deploy the API to Render Free
 
-The original project did not have a separate website-credential table in the inspected backend. Old user accounts can be preserved, but website-password entries must be imported from an existing encrypted browser vault or backup if one exists.
+The repository includes a Render Blueprint at `render.yaml`.
 
-## 1. Deploy the backend to Railway
+1. Open [Render Dashboard](https://dashboard.render.com/).
+2. Connect your GitHub account if needed.
+3. Choose **New → Blueprint** and select `tanshi2003/Password_Manager`.
+4. Review the service `password-manager-api`. Confirm the instance plan is **Free**.
+5. Render reads `render.yaml` and prompts for the unsynced database connection values and optional email configuration.
+6. Enter the TiDB host, username and password. Keep `TIDB_PORT=4000`, `TIDB_DATABASE=password_manager`, and `TIDB_SSL=true`.
+7. Keep the generated `JWT_SECRET`. Never put it in GitHub or frontend code.
+8. Deploy the service.
 
-Create a new Railway service from this GitHub repository. Use the repository root as the service root.
+The API creates the `users`, `user_vaults` and `password_resets` tables if absent. It does not drop tables or delete rows.
 
-- **Build command:** `npm install`
-- **Start command:** `npm start`
-
-Add these variables to the Railway service:
-
-| Variable | Value |
-|---|---|
-| `DB_HOST` | MySQL host |
-| `DB_PORT` | MySQL port |
-| `DB_USER` | MySQL username |
-| `DB_PASSWORD` | Newly rotated MySQL password |
-| `DB_NAME` | Database name |
-| `DB_SSL` | `true` if your MySQL provider requires TLS, otherwise `false` |
-| `JWT_SECRET` | Random secret with at least 32 characters |
-| `FRONTEND_ORIGIN` | `https://tanshi2003.github.io` (origin only, no path) |
-| `FRONTEND_URL` | `https://tanshi2003.github.io/Password_Manager/` |
-
-Generate a JWT secret locally with:
-
-```bash
-node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
-```
-
-For account password-reset emails, also configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, and `SMTP_FROM`. Forgot-password returns a clear configuration error until SMTP is configured.
-
-On first start, the API creates the additive vault/reset tables if they do not already exist. It does not drop or recreate the existing users table.
-
-After the service deploys, test:
+After deployment, Render provides a public URL similar to:
 
 ```
-https://YOUR-RAILWAY-SERVICE.up.railway.app/api/health
+https://password-manager-api.onrender.com
 ```
 
-The response should show `ok: true` and `database: "connected"`.
+Test:
 
-## 2. Connect GitHub Pages to Railway
+```
+https://YOUR-RENDER-SERVICE.onrender.com/api/health
+```
 
-Edit `web/config.js` and replace the placeholder with your actual Railway public URL:
+A healthy response should include `"ok": true` and `"database": "connected"`.
+
+## 3. Connect GitHub Pages to Render
+
+After Render provides the public service URL, edit `web/config.js` and replace the placeholder:
 
 ```js
-window.PASSWORD_MANAGER_API_BASE = "https://YOUR-RAILWAY-SERVICE.up.railway.app";
+window.PASSWORD_MANAGER_API_BASE = "https://YOUR-RENDER-SERVICE.onrender.com";
 ```
 
-Do not add a trailing slash. Do not put database credentials, SMTP credentials, or JWT secrets in this file.
+Do not add a trailing slash. Commit and push. GitHub Actions publishes `web/` automatically. GitHub Pages must use **Settings → Pages → Build and deployment → Source → GitHub Actions**.
 
-Commit and push the change. GitHub Actions publishes the `web/` folder automatically. GitHub Pages must have **Settings → Pages → Build and deployment → Source → GitHub Actions** selected.
+## 4. Account and vault access
 
-## 3. How users sign in and access the vault
-
-- Existing users sign in with the email and account password they already used in the old project, provided their stored bcrypt hash is still valid.
+- Existing users can sign in with their previous email and account password only if their old bcrypt hash is migrated into the new database. A fresh TiDB database starts empty, so old accounts do not appear automatically.
 - New users create an account with an account password of at least 12 characters.
-- After account sign-in, the user creates or enters a separate vault master password.
-- On another device, sign in to the same account and enter the same vault master password. The encrypted vault is downloaded and decrypted in that browser.
-- The account password reset flow does not reset the vault master password.
+- After sign-in, the user creates or enters a separate vault master password.
+- On another device, sign in to the same account and enter the same vault master password to retrieve the encrypted cloud vault.
+- Resetting the account password does not reset the vault master password.
 
-The API holds the account token in browser memory only. A page refresh requires another account sign-in. The vault master password and decrypted entries are not stored in local storage.
+The API token is held in browser memory only, so refreshing the page requires signing in again. The vault master password and decrypted entries are not stored in local storage.
 
-## 4. Existing local Keynest vault migration
+## 5. Password-reset email (optional)
 
-If the earlier local-only Keynest version created an encrypted vault in this same browser, the new app detects that encrypted local data when the signed-in account has no cloud vault. Enter the old vault master password to decrypt and upload it. The local copy is only removed after the cloud save succeeds.
+Render Free blocks SMTP ports 25, 465 and 587. The API can send password-reset emails through Resend's HTTPS API:
 
-If you do not know the old local vault master password, it cannot be recovered from the ciphertext. Do not clear browser site data before checking for an encrypted backup.
+1. Create a Resend account.
+2. Verify a sender domain/address you control.
+3. Set `RESEND_API_KEY` and `EMAIL_FROM` in Render environment variables.
+4. Keep the API key private and never put it in `web/config.js`.
 
-## 5. Local backend development
+If no sender is verified, leave these variables unset. Account signup, login, vault storage and sync still work; email-based account recovery remains disabled until an email provider is configured.
 
-1. Install Node.js 20 or later.
-2. Copy `.env.example` to `.env` and fill in local MySQL, JWT and optional SMTP values.
-3. Install packages:
+## Database safety and previous Railway data
 
-   ```bash
-   npm install
-   ```
+This free-hosting route uses a **new TiDB database**. It does not connect to or modify the old Railway MySQL volumes. Existing account rows and any historic database data will not be present in TiDB unless they are exported and migrated from the old database later. The API schema is additive and will not drop tables or user rows from a database you connect.
 
-4. Start the API:
+The previous repository contained credentials in Git history. Rotate the old Railway database password and revoke the old Gmail app password. Removing a secret from the latest branch does not erase earlier Git history.
 
-   ```bash
-   npm run dev
-   ```
-
-5. Serve the `web/` folder over localhost, set `web/config.js` to the local API URL, and add your local frontend origin to `FRONTEND_ORIGIN`.
-
-Never commit `.env` or any service credentials.
-
-## Security notes
-
-- User account passwords are stored as bcrypt hashes (cost 12) and compared server-side.
-- New account passwords must be at least 12 characters. Existing accounts can still sign in with their existing password.
-- Vault entries are encrypted in the browser with AES-256-GCM before they are sent to the API.
-- The API validates and stores the encrypted envelope only. It does not have the vault key.
-- API login and password-reset routes are rate-limited.
-- The vault master password cannot be recovered if forgotten. Keep an encrypted backup.
-- This is a personal project, not an independently audited password manager. Do not use it as the only protection for critical credentials until it has received a proper security review.
+This is a personal learning project, not an independently audited commercial password manager. Do not use it as your only protection for critical credentials.
