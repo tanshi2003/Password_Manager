@@ -44,6 +44,7 @@ const transporter = mailReady ? nodemailer.createTransport({
 let hasLegacyPlainPasswordColumn = false;
 
 app.disable("x-powered-by");
+app.set("trust proxy", 1);
 app.use(helmet());
 app.use(cors({
   origin(origin, callback) {
@@ -285,9 +286,13 @@ app.post("/api/auth/reset-password", resetLimiter, async (req, res, next) => {
     await connection.commit();
     return res.json({ message: "Account password updated. You can now sign in." });
   } catch (error) {
-    await connection.rollback();
+    if (connection) {
+      try { await connection.rollback(); } catch (_) {}
+    }
     return next(error);
-  } finally { if (connection) connection.release(); }
+  } finally {
+    if (connection) connection.release();
+  }
 });
 
 app.get("/api/vault", requireAuth, async (req, res, next) => {
