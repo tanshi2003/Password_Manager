@@ -25,7 +25,7 @@ const pool = mysql.createPool({
   host: process.env.TIDB_HOST || process.env.DB_HOST || process.env.MYSQLHOST,
   port: Number(process.env.TIDB_PORT || process.env.DB_PORT || process.env.MYSQLPORT || (useTiDB ? 4000 : 3306)),
   user: process.env.TIDB_USER || process.env.DB_USER || process.env.MYSQLUSER,
-  password: process.env.TIDB_PASSWORD || process.env.DB_PASSWORD || process.env.MYSQLPASSWORD,
+  password: useTiDB ? process.env.TIDB_PASSWORD : (process.env.DB_PASSWORD || process.env.MYSQLPASSWORD),
   database: process.env.TIDB_DATABASE || process.env.DB_NAME || process.env.MYSQLDATABASE,
   waitForConnections: true,
   connectionLimit: 5,
