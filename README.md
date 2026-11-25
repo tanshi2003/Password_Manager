@@ -27,7 +27,7 @@ The v2 backend is designed to reuse the existing MySQL `users` table and bcrypt 
 
 The backend detects whether the old `plain_password` column exists. If it does, new registrations and account password resets write an empty value to that legacy field only. The API never reads or returns that column.
 
-**Before reconnecting the backend, take a full MySQL backup and rotate the old database password.** The previous repository contained credentials in a committed `.env` file. Removing that file from the current branch does not erase it from Git history.
+**Before reconnecting the backend, take a full MySQL backup and rotate the old database password.** The previous repository contained database credentials in a committed `.env` file and an email app password hard-coded in the old backend. Removing them from the current branch does not erase them from Git history. Rotate the old database password and revoke the old email app password before redeploying.
 
 The additive migration is in `database/migration-v2.sql`. The optional removal of the old plaintext column is in `database/optional-cleanup-legacy-plaintext.sql`. Do not run the cleanup script until you have a verified backup and have confirmed existing accounts can sign in with their bcrypt hashes.
 

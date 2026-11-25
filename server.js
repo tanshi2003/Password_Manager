@@ -265,8 +265,9 @@ app.post("/api/auth/reset-password", resetLimiter, async (req, res, next) => {
   const password = String(req.body.password || "");
   if (!/^[a-f0-9]{64}$/i.test(resetToken)) return res.status(400).json({ message: "This reset link is invalid or expired." });
   if (password.length < 12 || password.length > 200) return res.status(400).json({ message: "Your new account password must be at least 12 characters." });
-  const connection = await pool.getConnection();
+  let connection;
   try {
+    connection = await pool.getConnection();
     const tokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
     const [rows] = await connection.execute(
       "SELECT id, user_id FROM password_resets WHERE token_hash = ? AND expires_at > UTC_TIMESTAMP() LIMIT 1",
@@ -286,7 +287,7 @@ app.post("/api/auth/reset-password", resetLimiter, async (req, res, next) => {
   } catch (error) {
     await connection.rollback();
     return next(error);
-  } finally { connection.release(); }
+  } finally { if (connection) connection.release(); }
 });
 
 app.get("/api/vault", requireAuth, async (req, res, next) => {
