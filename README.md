@@ -1,40 +1,52 @@
-# Password Manager
+# Keynest Password Vault
 
-A Node.js, Express, and MySQL password-manager learning project with signup, signin, a dashboard, and password-reset flows.
+A local-first password vault built with HTML, CSS, JavaScript, and the browser Web Crypto API. It is designed to run as a static site on GitHub Pages, without Render, Express, or a database.
 
-> **Security notice:** This repository is not production-ready. Do not enter real passwords or sensitive credentials into the current app. The existing backend stores a plaintext copy of each account password in the database and returns it to the dashboard. That must be redesigned before real use.
+## Play online
 
-## Hosting: GitHub Pages vs. a backend
+https://tanshi2003.github.io/Password_Manager/
 
-GitHub Pages only hosts static files (HTML, CSS, JavaScript, and images). It cannot run the Express server, maintain Express sessions, connect to MySQL, or send password-reset emails.
+## Features
 
-The current app depends on Express routes in `app.js`, MySQL, Express sessions, and Nodemailer. The frontend also calls an older Render API URL. Selecting GitHub Pages alone will not make signup, signin, dashboard data, or password reset work.
+- Create a vault protected by a master password.
+- Encrypt the full vault in the browser using AES-256-GCM.
+- Derive the encryption key with PBKDF2-SHA-256 (600,000 iterations).
+- Save only the encrypted vault envelope in browser local storage.
+- Add, edit, search, and delete credential entries.
+- Generate strong random passwords.
+- Copy usernames and passwords when needed.
+- Lock manually or automatically after five minutes of inactivity.
+- Export and import an encrypted JSON backup.
+
+## How storage works
+
+This is a local-first vault. Encrypted data is saved in the current browser profile on the current device. It is not synced to a server or automatically shared with another device.
+
+- Export encrypted backups regularly and store them securely.
+- To move to another device, transfer the encrypted backup and import it there using the same master password.
+- If you forget the master password, the vault cannot be decrypted.
+- If browser site data is cleared and you have no backup, the vault is lost.
+
+## Security model and limitations
+
+A random salt is used with PBKDF2-SHA-256 to derive an AES-256-GCM key from the master password. Each save uses a fresh 96-bit random IV. The master password and decrypted entries are kept in memory while the vault is unlocked; the value saved in local storage is ciphertext.
+
+This is a personal learning project, not an independently audited commercial password manager. A browser app cannot protect against malware, malicious browser extensions, compromised devices, or same-origin script injection. Do not use it as your only password manager for critical accounts.
 
 ## Run locally
 
-1. Install Node.js.
-2. Clone this repository.
-3. Install packages: `npm install`.
-4. Create your own untracked `.env` file with the environment variables required by your database setup. Never commit this file.
-5. Start the server: `npm start`.
-6. Open http://localhost:3000.
+Because the app uses Web Crypto, use a secure context such as HTTPS or localhost. From the repository folder, run a local static server:
 
-A compatible MySQL database and configured email provider are also required for password-reset functionality.
+```bash
+python -m http.server 8000
+```
 
-## Before using real credentials
+Then open http://localhost:8000/web/ (or serve the contents of `web/` as the site root).
 
-The current implementation needs a security redesign:
+## GitHub Pages deployment
 
-- Never store account passwords in plaintext. Store only strong password hashes for user authentication.
-- Do not return password hashes or plaintext passwords from API responses.
-- Do not put vault secrets in `localStorage` without a carefully designed encryption model.
-- Use a strong session secret from environment configuration, secure cookies, and HTTPS.
-- Generate cryptographically secure, expiring, single-use password-reset tokens.
-- Keep database and email credentials on the server, never in browser code or Git.
-- Rotate credentials that were previously committed to this repository.
+The Pages workflow publishes the `web/` directory. In the repository, open **Settings → Pages → Build and deployment → Source**, select **GitHub Actions**, and save once. Future pushes to `main` deploy automatically.
 
-## GitHub Pages
+## Repository history and credential rotation
 
-GitHub Pages can host a marketing page or a carefully designed client-side encrypted demo vault, but it cannot provide this project's current server-backed account system. A secure client-side vault would need a separate design using browser cryptography, a key derived from a user passphrase, authenticated encryption, and carefully considered recovery and data-sync behavior.
-
-Until that redesign is complete, run this as a learning project locally or deploy it with a properly secured backend. GitHub Pages alone is not a replacement for the current Express + MySQL backend.
+The repository previously contained a Node/Express + MySQL prototype. It has been removed from the active branch because it stored plaintext account passwords and included credentials in tracked source/configuration. Removing those values from the latest commit does not erase them from Git history. **Rotate/revoke any database and email credentials that were ever committed** in their provider dashboards.
