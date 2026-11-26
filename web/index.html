@@ -17,26 +17,26 @@
   --mint2:#e8f0e8;
   --danger:#bd5555;
   --gold:#9a6b22;
-  --shadow:0 14px 38px rgba(37,54,42,.08);
+  --shadow:none;
 }
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 8% 0%,rgba(218,232,216,.58),transparent 30%),radial-gradient(ellipse at 94% 8%,rgba(238,227,210,.42),transparent 25%),var(--bg);font-family:"DM Sans",system-ui,sans-serif;color:var(--text)}
+body{margin:0;min-height:100vh;background:var(--bg);font-family:"DM Sans",system-ui,sans-serif;color:var(--text)}
 button,input,textarea{font:inherit}
 button{cursor:pointer}
 .hidden{display:none!important}
 .shell{width:min(1120px,calc(100% - 34px));margin:auto}
-header{height:76px;border-bottom:1px solid var(--line);display:flex;align-items:center;background:rgba(255,255,255,.76);backdrop-filter:blur(12px)}
+header{height:76px;border-bottom:1px solid var(--line);display:flex;align-items:center;background:rgba(255,255,255,.76);backdrop-filter:none}
 .nav{display:flex;justify-content:space-between;align-items:center;width:min(1120px,calc(100% - 34px));margin:auto}
 .brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:.055em;color:#26372d}
-.brandmark{width:38px;height:38px;border-radius:11px;background:#315f45;display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 4px 10px rgba(49,95,69,.16)}
-.brand small{display:block;color:#839087;font-size:9px;letter-spacing:.16em;margin-top:2px}
+.brandmark{width:38px;height:38px;border-radius:7px;background:#315f45;display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 4px 10px rgba(49,95,69,.16)}
+.brand small{display:block;color:#839087;font-size:9px;letter-spacing:.08em;margin-top:2px}
 .nav-actions{display:flex;gap:8px}
 .hero{padding:48px 0 24px;text-align:center}
-.eyebrow{text-transform:uppercase;letter-spacing:.17em;font-size:10px;color:var(--mint);font-weight:800}
+.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:10px;color:var(--mint);font-weight:800}
 .hero h1{font-size:clamp(34px,6vw,56px);letter-spacing:-.055em;line-height:1.05;margin:12px 0;color:#26372d}
 .hero h1 span{color:#477b5c}
 .hero p{max-width:640px;margin:0 auto;color:var(--muted);font-size:14px;line-height:1.75}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:none}
 .auth-card{width:min(490px,100%);margin:10px auto 65px;padding:27px}
 .auth-card h2{margin:0 0 8px;font-size:22px;letter-spacing:-.025em;color:#2a382f}
 .auth-card>p{color:var(--muted);font-size:13px;line-height:1.65;margin:0 0 20px}
@@ -94,24 +94,24 @@ header{height:76px;border-bottom:1px solid var(--line);display:flex;align-items:
 .empty h3{font-size:16px;margin:0 0 6px;color:#2d3a31}
 .empty p{font-size:12px;color:var(--muted);margin:0 0 15px}
 .modal{position:fixed;inset:0;z-index:10;background:rgba(35,48,38,.38);backdrop-filter:blur(4px);display:grid;place-items:center;padding:16px}
-.modal-card{width:min(520px,100%);max-height:90vh;overflow:auto;padding:24px;background:#fff;border-color:#e4e9e2;box-shadow:0 24px 70px rgba(31,48,36,.18)}
+.modal-card{width:min(520px,100%);max-height:90vh;overflow:auto;padding:24px;background:#fff;border-color:#e4e9e2;box-shadow:0 8px 28px rgba(31,48,36,.12)}
 .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .modal-head h2{margin:0;font-size:20px;color:#2a382f}
 .close{border:0;background:#f1f4ef;color:#68766c;width:31px;height:31px;border-radius:9px;font-size:17px}
 .password-row{display:flex;gap:7px}
 .password-row input{flex:1;min-width:0}
 .form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:19px}
-.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#315f45;border:1px solid #244d36;color:#fff;padding:11px 16px;border-radius:10px;font-size:12px;box-shadow:0 10px 28px rgba(39,75,51,.2);z-index:30;max-width:calc(100vw - 30px);text-align:center}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#315f45;border:1px solid #244d36;color:#fff;padding:11px 16px;border-radius:10px;font-size:12px;box-shadow:0 4px 12px rgba(39,75,51,.14);z-index:30;max-width:calc(100vw - 30px);text-align:center}
 .footer{text-align:center;padding:25px 0 32px;color:#879188;font-size:10px;line-height:1.7}
 @media(max-width:700px){.entries{grid-template-columns:1fr}.workspace-head{align-items:flex-start;flex-direction:column}.stats{gap:7px}.stat{padding:12px}.stat strong{font-size:20px}.toolbar{flex-wrap:wrap}.toolbar .search{flex-basis:100%}.nav-actions .btn span{display:none}}
 @media(max-width:430px){.shell{width:min(100% - 22px,1120px)}.auth-card{padding:20px}.hero{padding-top:35px}.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:1/-1}.head-actions{width:100%}.head-actions .btn{flex:1}.row2{grid-template-columns:1fr}.entry-buttons .btn{flex:1}}
 button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #bc9a54;outline-offset:3px}
 </style></head>
 <body>
-<header><div class="nav"><div class="brand"><div class="brandmark">⌑</div><div>KEYNEST<small>SECURE PASSWORD MANAGER</small></div></div><div class="nav-actions"><button id="lockBtn" class="btn hidden" type="button">Lock vault</button><button id="logoutBtn" class="btn hidden" type="button">Sign out</button></div></div></header>
+<header><div class="nav"><div class="brand"><div class="brandmark">⌑</div><div>KEYNEST<small>PASSWORD MANAGER</small></div></div><div class="nav-actions"><button id="lockBtn" class="btn hidden" type="button">Lock vault</button><button id="logoutBtn" class="btn hidden" type="button">Sign out</button></div></div></header>
 <main class="shell">
 <section id="authView">
-<div class="hero"><div class="eyebrow">Your accounts. Your private vault.</div><h1>A safer place for<br><span>your passwords.</span></h1><p>Sign in to your account to reach your vault from any device. Saved credentials are encrypted in your browser before they are synchronised to the server.</p></div>
+<div class="hero"><div class="eyebrow">Password manager</div><h1>Your passwords,<br><span>in one place.</span></h1><p>Sign in to your account to reach your vault from any device. Saved credentials are encrypted in your browser before they are synchronised to the server.</p></div>
 <section id="accountCard" class="card auth-card">
 <div class="tabs"><button class="tab active" id="loginTab" type="button">Sign in</button><button class="tab" id="signupTab" type="button">Create account</button></div>
 <div id="loginPanel"><h2>Welcome back</h2><p>Sign in with your existing Password Manager account.</p><form id="loginForm">
@@ -141,11 +141,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 </section>
 
 <section id="vaultView" class="workspace hidden">
-<div class="workspace-head"><div><div class="eyebrow">Encrypted cloud vault</div><h1>My passwords</h1><p id="vaultSubtitle">Your vault is synchronised to your account.</p></div><div class="head-actions"><button class="btn" id="exportBtn" type="button">↓ Export backup</button><button class="btn" id="importBtn" type="button">↑ Import backup</button><button class="btn btn-primary" id="addBtn" type="button">＋ Add password</button></div></div>
+<div class="workspace-head"><div><div class="eyebrow">Your vault</div><h1>My passwords</h1><p id="vaultSubtitle">Your vault is synchronised to your account.</p></div><div class="head-actions"><button class="btn" id="exportBtn" type="button">↓ Export backup</button><button class="btn" id="importBtn" type="button">↑ Import backup</button><button class="btn btn-primary" id="addBtn" type="button">＋ Add password</button></div></div>
 <div class="stats"><div class="card stat"><span>Saved entries</span><strong id="entryCount">0</strong></div><div class="card stat"><span>Vault status</span><strong style="font-size:16px">Encrypted</strong></div><div class="card stat"><span>Cloud sync</span><strong id="syncStatus" style="font-size:16px">Connected</strong></div></div>
 <div class="card toolbar"><input class="search" id="searchInput" type="search" placeholder="Search websites, usernames or notes..." aria-label="Search vault"><button class="btn" id="generatorBtn" type="button">⚙ Generate</button></div>
 <div id="entries" class="entries"></div>
-<div class="footer">KEYNEST · AES‑256‑GCM · PBKDF2‑SHA‑256 · Encrypted before upload<br>Sign in from another device to retrieve the same vault. Keep your vault master password and encrypted backups safe.</div>
+<div class="footer">AES-256-GCM · PBKDF2-SHA-256 · Encrypted before upload<br>Sign in from another device to retrieve the same vault. Keep your vault master password and encrypted backups safe.</div>
 </section></main>
 <div id="entryModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><section class="card modal-card"><div class="modal-head"><h2 id="modalTitle">Add password</h2><button class="close" id="closeModal" type="button" aria-label="Close">×</button></div>
 <form id="entryForm"><div class="field"><label for="entryTitle">Service / website</label><input id="entryTitle" maxlength="80" placeholder="e.g. Personal email" required></div><div class="field"><label for="entryUrl">Website URL</label><input id="entryUrl" type="url" maxlength="300" placeholder="https://example.com"></div><div class="field"><label for="entryUsername">Username / email</label><input id="entryUsername" maxlength="160" autocomplete="off" placeholder="name@example.com"></div><div class="field"><label for="entryPassword">Password</label><div class="password-row"><input id="entryPassword" type="password" maxlength="500" autocomplete="new-password" placeholder="Enter or generate a password" required><button type="button" class="btn" id="toggleEntryPassword">Show</button><button type="button" class="btn" id="generateEntryPassword">Generate</button></div></div><div class="field"><label for="entryNotes">Notes (optional)</label><textarea id="entryNotes" maxlength="1000" placeholder="Account notes"></textarea></div><div class="form-actions"><button class="btn" id="cancelEntry" type="button">Cancel</button><button class="btn btn-primary" type="submit">Save securely</button></div></form></section></div>
